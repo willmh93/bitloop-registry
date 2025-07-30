@@ -1,17 +1,18 @@
 # portfile.cmake
 
-# 1. Find out where *this* file lives
-get_filename_component(_portfile "${CMAKE_CURRENT_LIST_FILE}" ABSOLUTE)
-get_filename_component(_portdir  "${_portfile}" DIRECTORY)
+include(vcpkg_common_functions)
 
-# 2. Walk up *exactly* three levels to your bitloop repo root
-get_filename_component(BITLOOP_SRC "${_portdir}/../../.." REALPATH)
-
-message(STATUS "––– BITLOOP_SRC = ${BITLOOP_SRC} –––")
+# 1. Fetch the Bitloop source from GitHub
+vcpkg_from_github(
+    OUT_SOURCE_PATH  SOURCE_PATH
+    REPO             willmh93/bitloop
+    REF              v${PORT_VERSION_STRING}
+    SHA512           61c7955c648016c39777ee6f6294e25f9d5345564291dd0121801510987147121af92c9c57f51e0e87e20dfa3f67be2558d26d1d2f35757f8df2262a1432a80e
+)
 
 # 3. Configure your Bitloop
 vcpkg_configure_cmake(
-  SOURCE_PATH    "${BITLOOP_SRC}/framework"
+  SOURCE_PATH    "${SOURCE_PATH}/framework"
   PREFER_NINJA
   OPTIONS
     "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
