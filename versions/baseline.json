@@ -1,0 +1,8 @@
+{
+  "default": {
+    "bitloop": {
+      "baseline": "*",
+      "port-version": 0
+    }
+  }
+}
