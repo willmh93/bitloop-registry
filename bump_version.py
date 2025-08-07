@@ -85,14 +85,14 @@ def bump_version(version: str):
     tree_file.write_text(json.dumps(tree_data, indent=2) + "\n")
 
     # 8) Commit changes
-    subprocess.run(["git", "add",
-                    str(vcpkg_json_path),
-                    str(portfile_path),
-                    str(baseline_file),
-                    str(tree_file)],
-                   check=True)
-    subprocess.run(["git", "commit", "-m", f"bitloop: bump version to {version}"], check=True)
-
+    #subprocess.run(["git", "add",
+    #                str(vcpkg_json_path),
+    #                str(portfile_path),
+    #                str(baseline_file),
+    #                str(tree_file)],
+    #               check=True)
+    #subprocess.run(["git", "commit", "-m", f"bitloop: bump version to {version}"], check=True)
+    
     print(f"✔ Bumped bitloop to {version}")
 
 def main():
