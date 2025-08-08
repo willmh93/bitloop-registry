@@ -63,20 +63,23 @@ def bump_version(version: str):
     }
     baseline_file.write_text(json.dumps(baseline_data, indent=2) + "\n")
 
-    # 6) Lookup git-tree for the tag
-    repo_url = "https://github.com/willmh93/bitloop.git"
+    # 6) Lookup git-tree for the port directory in the registry repo
+    # Ensure we run inside the registry repo
+    rel_port_path = str((port_dir).relative_to(repo_root))
     result = subprocess.run(
-        ["git", "ls-remote", repo_url, f"refs/tags/v{version}"],
-        capture_output=True, text=True, check=True
+        ["git", "ls-tree", "HEAD", rel_port_path],
+        cwd=str(repo_root), capture_output=True, text=True, check=True
     )
-    git_tree = result.stdout.split()[0]
+    # git ls-tree output: '<mode> tree <sha>\t<path>'
+    tree_sha = result.stdout.split()[2]
+    print("tree_sha" + tree_sha)
 
     # 7) Write versions/<letter>-/bitloop.json
     tree_dir.mkdir(exist_ok=True)
     tree_data = {
         "versions": [
             {
-                "git-tree": git_tree,
+                "git-tree": tree_sha,
                 "version-string": version,
                 "port-version": 0
             }
