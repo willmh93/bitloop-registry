@@ -65,26 +65,34 @@ def bump_version(version: str):
 
     # 6) Lookup git-tree for the port directory in the registry repo
     # Ensure we run inside the registry repo
-    rel_port_path = str((port_dir).relative_to(repo_root))
-    result = subprocess.run(
-        ["git", "ls-tree", "HEAD", rel_port_path],
-        cwd=str(repo_root), capture_output=True, text=True, check=True
-    )
-    # git ls-tree output: '<mode> tree <sha>\t<path>'
-    tree_sha = result.stdout.split()[2]
-    print("tree_sha" + tree_sha)
-
-    # 7) Write versions/<letter>-/bitloop.json
-    tree_dir.mkdir(exist_ok=True)
+    
+    # Stage updated port dir (after editing vcpkg.json/portfile.cmake)
+    subprocess.run(["git", "add", "ports/bitloop"], cwd=repo_root, check=True)
+    
+    # Snapshot index as a tree (no commit required)
+    root_tree = subprocess.run(
+        ["git", "write-tree"], cwd=repo_root,
+        capture_output=True, text=True, check=True
+    ).stdout.strip()
+    
+    # Extract subtree SHA for ports/bitloop
+    subtree_sha = subprocess.run(
+        ["git", "ls-tree", root_tree, "ports/bitloop"],
+        cwd=repo_root, capture_output=True, text=True, check=True
+    ).stdout.split()[2]
+    
+    # Write versions/<letter>-/bitloop.json
+    tree_dir.mkdir(parents=True, exist_ok=True)
     tree_data = {
-        "versions": [
-            {
-                "git-tree": tree_sha,
-                "version-string": version,
-                "port-version": 0
-            }
-        ]
+        "versions": [{
+            "git-tree": subtree_sha,
+            "version-string": version,
+            "port-version": 0
+        }]
     }
+    tree_file.write_text(json.dumps(tree_data, indent=2) + "\n")
+    print("git-tree:", subtree_sha)
+
     tree_file.write_text(json.dumps(tree_data, indent=2) + "\n")
 
     # 8) Commit changes
