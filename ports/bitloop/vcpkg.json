@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-string": "0.9.5",
+  "version-string": "0.9.6",
   "port-version": 0,
   "dependencies": [
     "sdl3",
