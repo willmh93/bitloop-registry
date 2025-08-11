@@ -1,7 +1,5 @@
 # portfile.cmake
 
-include(vcpkg_common_functions)
-
 # 1. Fetch the Bitloop source from GitHub
 vcpkg_from_github(
     OUT_SOURCE_PATH  SOURCE_PATH
