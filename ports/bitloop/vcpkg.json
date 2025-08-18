@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.15",
+  "version-semver": "0.9.17",
   "dependencies": [
     "freetype",
     "glm",
