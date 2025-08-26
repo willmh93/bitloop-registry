@@ -1,8 +1,24 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.21",
+  "version-semver": "0.9.22",
   "dependencies": [
+    "brotli",
+    "bshoshany-thread-pool",
+    "catch2",
+    "concurrentqueue",
+    {
+      "name": "ffmpeg",
+      "default-features": false,
+      "features": [
+        "avcodec",
+        "avformat",
+        "swresample",
+        "swscale"
+      ],
+      "platform": "!wasm32"
+    },
     "freetype",
+    "glad",
     "glm",
     {
       "name": "imgui",
@@ -13,6 +29,14 @@
         "sdl3-binding"
       ]
     },
-    "sdl3"
+    "nanosvg",
+    "nanovg",
+    "nlohmann-json",
+    "sdl3",
+    {
+      "name": "vcpkg-tool-ninja",
+      "host": true,
+      "platform": "windows"
+    }
   ]
 }
