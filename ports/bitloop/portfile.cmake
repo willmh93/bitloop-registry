@@ -5,7 +5,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH  SOURCE_PATH
     REPO             willmh93/bitloop
     REF              v${VERSION}
-    SHA512           be6fc2292a35e78950c697aaa990f36a42c9784935afec1541669a6f237ef30e71df2dfc8f96f9df3e3720a59c08d69a2eeadbe41201d8882f0558f11911aaba
+    SHA512           00035362caec23dfbd2c45c095365f23b3f393f298ce989e3de8a6d661a29aed408d138a7e23ba4c24299e0ed6aea63a583538fc8e7482436b34655800597736
 )
 
 # 3. Configure your Bitloop
