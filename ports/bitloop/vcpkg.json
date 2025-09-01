@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.26",
+  "version-semver": "0.9.27",
   "dependencies": [
     "brotli",
     "bshoshany-thread-pool",
