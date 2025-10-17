@@ -1,8 +1,16 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.35",
+  "version-semver": "0.9.36",
   "dependencies": [
     "brotli",
+    {
+      "name": "brotli",
+      "host": true,
+      "features": [
+        "tools"
+      ],
+      "platform": "windows"
+    },
     "bshoshany-thread-pool",
     "catch2",
     "concurrentqueue",
@@ -13,11 +21,13 @@
         "avcodec",
         "avformat",
         "swresample",
-        "swscale"
+        "swscale",
+        "x265"
       ],
       "platform": "!wasm32"
     },
     "freetype",
+    "glad",
     "glm",
     {
       "name": "imgui",
@@ -28,6 +38,8 @@
         "sdl3-binding"
       ]
     },
+    "implot",
+    "libwebp",
     "nanosvg",
     "nanovg",
     "nlohmann-json",

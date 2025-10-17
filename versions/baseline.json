@@ -1,7 +1,7 @@
 {
   "default": {
     "bitloop": {
-      "baseline": "0.9.35",
+      "baseline": "0.9.36",
       "port-version": 0
     }
   }
