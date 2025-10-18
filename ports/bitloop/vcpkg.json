@@ -4,12 +4,8 @@
   "dependencies": [
     "brotli",
     {
-      "name": "brotli",
-      "host": true,
-      "features": [
-        "tools"
-      ],
-      "platform": "windows"
+      "name": "brotli-tool",
+      "host": true
     },
     "bshoshany-thread-pool",
     "catch2",
