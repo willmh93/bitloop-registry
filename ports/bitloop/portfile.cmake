@@ -10,7 +10,7 @@ vcpkg_from_github(
 
 # 3. Configure your Bitloop
 vcpkg_configure_cmake(
-  SOURCE_PATH    "${SOURCE_PATH}/framework"
+  SOURCE_PATH    "${SOURCE_PATH}"
   PREFER_NINJA
   OPTIONS
     "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
