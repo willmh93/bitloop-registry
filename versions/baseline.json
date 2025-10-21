@@ -1,7 +1,7 @@
 {
   "default": {
     "bitloop": {
-      "baseline": "0.9.52",
+      "baseline": "0.9.53",
       "port-version": 0
     },
     "brotli-tool": {

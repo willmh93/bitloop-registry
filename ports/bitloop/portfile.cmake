@@ -5,7 +5,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH  SOURCE_PATH
     REPO             willmh93/bitloop
     REF              v${VERSION}
-    SHA512           e7d6c8a49fc501e0a32926f37639f56ff5dd5e71571ed1123f564acc72bc244d975367098c2006c0f9a6b692acdbead0c315aee36fce164ca09343ba824fb6f4
+    SHA512           e3b49792e7558e1af8c5a1a030b061dac47087ffa3e4c01ed23a9fa47b0cf44b5941a38aa45420b0d2cef68611bf40e68ac7c168ebedfea85c83464b2345093a
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTS
