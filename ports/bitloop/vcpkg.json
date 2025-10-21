@@ -36,8 +36,8 @@
     }
   ],
   "features": {
-    "ffmpeg-lgpl": {
-      "description": "Enable FFmpeg (LGPL set; no GPL codecs)",
+    "ffmpeg": {
+      "description": "Enable FFmpeg (LGPL)",
       "dependencies": [
         {
           "name": "ffmpeg",
@@ -54,8 +54,8 @@
         }
       ]
     },
-    "ffmpeg-x265-gpl": {
-      "description": "Enable x265 via FFmpeg (GPL; HEVC patents may apply)",
+    "ffmpeg-x265": {
+      "description": "Enable x265 via FFmpeg (GPL)",
       "dependencies": [
         {
           "name": "ffmpeg",
