@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.47",
+  "version-semver": "0.9.48",
   "dependencies": [
     "brotli",
     {
@@ -16,8 +16,9 @@
       "features": [
         "avcodec",
         "avformat",
-        "swresample",
+        "gpl",
         "swscale",
+        "x264",
         "x265"
       ],
       "platform": "!wasm32"
