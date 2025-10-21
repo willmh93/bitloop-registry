@@ -5,16 +5,19 @@ vcpkg_from_github(
     OUT_SOURCE_PATH  SOURCE_PATH
     REPO             willmh93/bitloop
     REF              v${VERSION}
-    SHA512           a8c583f5bc99b78b4b6295996679fb2e6bdf2e6c2ef2371a382ef2c67a6dae018f63908ceddb41c9534a0a35599ad11676c3ebb3e8c296031c21c5c04d208345
+    SHA512           945c0efc734cde458ca1eacd6dae044266923b82bf5c8882ae6035ac0f01a4dbb9bb609a4004c10a271cad9cb276c44eaea94cf139f5724dd77c35e73abebf6e
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTS
     FEATURES
-        ffmpeg        BITLOOP_WITH_FFMPEG
-        ffmpeg-x265   BITLOOP_WITH_FFMPEG
-        ffmpeg-x265   BITLOOP_WITH_FFMPEG_X265
+        ffmpeg       BITLOOP_WITH_FFMPEG
+        ffmpeg-x265  BITLOOP_WITH_FFMPEG_X265
 )
 
+# If ffmpeg-x265 is selected, also force BITLOOP_WITH_FFMPEG=ON
+if(BITLOOP_WITH_FFMPEG_X265)
+    list(APPEND FEATURE_OPTS -DBITLOOP_WITH_FFMPEG=ON)
+endif()
 
 # 3. Configure your Bitloop
 vcpkg_configure_cmake(
