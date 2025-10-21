@@ -5,13 +5,14 @@ vcpkg_from_github(
     OUT_SOURCE_PATH  SOURCE_PATH
     REPO             willmh93/bitloop
     REF              v${VERSION}
-    SHA512           e3b49792e7558e1af8c5a1a030b061dac47087ffa3e4c01ed23a9fa47b0cf44b5941a38aa45420b0d2cef68611bf40e68ac7c168ebedfea85c83464b2345093a
+    SHA512           a8c583f5bc99b78b4b6295996679fb2e6bdf2e6c2ef2371a382ef2c67a6dae018f63908ceddb41c9534a0a35599ad11676c3ebb3e8c296031c21c5c04d208345
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTS
     FEATURES
         ffmpeg        BITLOOP_WITH_FFMPEG
-        ffmpeg-x265   BITLOOP_WITH_FFMPEG BITLOOP_WITH_FFMPEG_X265
+        ffmpeg-x265   BITLOOP_WITH_FFMPEG
+        ffmpeg-x265   BITLOOP_WITH_FFMPEG_X265
 )
 
 
