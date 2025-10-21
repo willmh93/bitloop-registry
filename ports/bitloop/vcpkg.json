@@ -1,6 +1,7 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.49",
+  "version-semver": "0.9.51",
+  "description": "bitloop framework",
   "dependencies": [
     "brotli",
     {
@@ -10,22 +11,6 @@
     "bshoshany-thread-pool",
     "catch2",
     "concurrentqueue",
-    {
-      "name": "ffmpeg",
-      "default-features": false,
-      "features": [
-        "avcodec",
-        "avdevice",
-        "avfilter",
-        "avformat",
-        "gpl",
-        "swresample",
-        "swscale",
-        "x264",
-        "x265"
-      ],
-      "platform": "!wasm32"
-    },
     "freetype",
     "glad",
     "glm",
@@ -49,5 +34,45 @@
       "host": true,
       "platform": "windows"
     }
-  ]
+  ],
+  "features": {
+    "ffmpeg-lgpl": {
+      "description": "Enable FFmpeg (LGPL set; no GPL codecs)",
+      "dependencies": [
+        {
+          "name": "ffmpeg",
+          "default-features": false,
+          "features": [
+            "avcodec",
+            "avdevice",
+            "avfilter",
+            "avformat",
+            "swresample",
+            "swscale"
+          ],
+          "platform": "!wasm32"
+        }
+      ]
+    },
+    "ffmpeg-x265-gpl": {
+      "description": "Enable x265 via FFmpeg (GPL; HEVC patents may apply)",
+      "dependencies": [
+        {
+          "name": "ffmpeg",
+          "default-features": false,
+          "features": [
+            "avcodec",
+            "avdevice",
+            "avfilter",
+            "avformat",
+            "gpl",
+            "swresample",
+            "swscale",
+            "x265"
+          ],
+          "platform": "!wasm32"
+        }
+      ]
+    }
+  }
 }
