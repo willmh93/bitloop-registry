@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.56",
+  "version-semver": "0.9.57",
   "description": "bitloop framework",
   "dependencies": [
     "brotli",
