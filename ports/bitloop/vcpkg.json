@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.60",
+  "version-semver": "0.9.61",
   "description": "bitloop framework",
   "dependencies": [
     "brotli",
@@ -9,7 +9,6 @@
       "host": true
     },
     "bshoshany-thread-pool",
-    "catch2",
     "concurrentqueue",
     "freetype",
     "glad",
