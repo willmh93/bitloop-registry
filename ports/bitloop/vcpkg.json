@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.85",
+  "version-semver": "0.9.86",
   "description": "bitloop framework",
   "dependencies": [
     "brotli",
@@ -29,6 +29,7 @@
     "nanovg",
     "nlohmann-json",
     "sdl3",
+    "tsl-ordered-map",
     {
       "name": "vcpkg-tool-ninja",
       "host": true,
