@@ -1,6 +1,6 @@
 {
   "name": "bitloop",
-  "version-semver": "0.9.95",
+  "version-semver": "0.9.96",
   "description": "bitloop framework",
   "dependencies": [
     "brotli",
@@ -13,7 +13,6 @@
     "freetype",
     "gcem",
     "glad",
-    "glm",
     {
       "name": "imgui",
       "features": [
