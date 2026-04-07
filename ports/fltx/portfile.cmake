@@ -2,7 +2,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO willmh93/fltx
     REF "v${VERSION}"
-    SHA512 0
+    SHA512 f59c5f966b11087212f8b850e4379f859bd0edf9e16ffacfd4cdb154a5bfb6d3eccf20828c257caa37c4674c9098bb0f5cd124b9b86804d641ccd20a79d13498
     HEAD_REF main
 )
 
