@@ -1,6 +1,6 @@
 {
   "name": "fltx",
-  "version-string": "0.1.0",
+  "version": "0.1.0",
   "description": "High-precision double-double and quad-double floating-point types and math utilities",
   "homepage": "https://github.com/willhm94/fltx",
   "license": "MIT",

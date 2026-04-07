@@ -7,6 +7,10 @@
     "brotli-tool": {
       "baseline": "1.1.0",
       "port-version": 0
+    },
+    "fltx": {
+      "baseline": "0.1.0",
+      "port-version": 0
     }
   }
 }
