@@ -8,6 +8,10 @@ vcpkg_from_github(
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS
+        -DFLTX_BUILD_TESTS=OFF
+        -DFLTX_BUILD_EXAMPLES=OFF
+        -DBUILD_TESTING=OFF
 )
 
 vcpkg_cmake_install()
