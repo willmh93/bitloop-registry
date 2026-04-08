@@ -2,8 +2,3 @@ fltx provides CMake targets:
 
     find_package(fltx CONFIG REQUIRED)
     target_link_libraries(your_target PRIVATE fltx::fltx)
-
-Example:
-
-    add_executable(app main.cpp)
-    target_link_libraries(app PRIVATE fltx::fltx)
