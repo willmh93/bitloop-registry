@@ -2,7 +2,6 @@
 import argparse
 import hashlib
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -11,117 +10,201 @@ import tempfile
 import urllib.request
 from pathlib import Path
 
+
 def run(cmd, cwd=None):
     print("> " + " ".join(cmd))
     subprocess.run(cmd, cwd=cwd, check=True)
 
-def sha512_file(path):
+
+def sha512_file(path: Path) -> str:
     h = hashlib.sha512()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+    with open(path, "rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
 
-def download(url, dst):
+
+def download(url: str, dst: Path) -> None:
     print(f"Downloading: {url}")
-    with urllib.request.urlopen(url) as r, open(dst, "wb") as f:
-        shutil.copyfileobj(r, f)
+    with urllib.request.urlopen(url) as response, open(dst, "wb") as file:
+        shutil.copyfileobj(response, file)
     print(f"Saved to: {dst}")
 
-def replace_ref_and_sha(portfile_text, version, sha):
-    # Update SHA512 (use \g<1> so \1 + a digit isn't misread as \12)
-    portfile_text_new = re.sub(
+
+def detect_newline(text: str) -> str:
+    if "\r\n" in text:
+        return "\r\n"
+    return "\n"
+
+
+def dump_json_with_original_newline(obj, newline: str) -> str:
+    text = json.dumps(obj, indent=2, ensure_ascii=False)
+    return text.replace("\n", newline) + newline
+
+
+def replace_repo_ref_and_sha(portfile_text: str, repo: str, tag: str, sha: str) -> str:
+    updated = re.sub(
         r"(\bSHA512\s+)[0-9a-fA-F]+",
         r"\g<1>" + sha,
         portfile_text,
         count=1,
     )
 
-    # Update REF if it's a concrete tag; leave REF v${VERSION} alone
-    if "${VERSION}" not in portfile_text_new:
-        portfile_text_new = re.sub(
-            r"(\bREF\s+v)[^\s]+",
-            r"\g<1>" + version,
-            portfile_text_new,
+    updated = re.sub(
+        r'(\bREPO\s+")([^"]+)(")',
+        r'\g<1>' + repo + r'\g<3>',
+        updated,
+        count=1,
+    )
+
+    if "${VERSION}" not in updated:
+        updated = re.sub(
+            r'(\bREF\s+")([^"]+)(")',
+            r'\g<1>' + tag + r'\g<3>',
+            updated,
+            count=1,
+        )
+        updated = re.sub(
+            r'(\bREF\s+)([^\s\)]+)',
+            r'\g<1>' + tag,
+            updated,
             count=1,
         )
 
-    return portfile_text_new
+    return updated
+
+
+def ask_non_empty(prompt: str, default: str | None = None) -> str:
+    while True:
+        suffix = f" [{default}]" if default else ""
+        value = input(f"{prompt}{suffix}: ").strip()
+        if value:
+            return value
+        if default:
+            return default
+        print("A value is required")
+
+
+def normalize_tag(tag_text: str) -> str:
+    tag = tag_text.strip()
+    if not tag:
+        raise ValueError("Tag is required")
+    if not tag.startswith("v"):
+        tag = f"v{tag}"
+    if not re.fullmatch(r"v\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?", tag):
+        raise ValueError('Tag must look like "v0.1.3"')
+    return tag
+
+
+def version_from_tag(tag: str) -> str:
+    return tag[1:]
+
+
+def find_manifest_version_field(manifest_obj: dict) -> str:
+    for key in ("version", "version-semver", "version-date", "version-string"):
+        if key in manifest_obj:
+            return key
+    return "version"
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Update a vcpkg port to a new version and SHA512.")
-    ap.add_argument("--version", required=True, help="Version string (e.g. 0.9.15)")
-    ap.add_argument("--repo", default="willmh93/bitloop", help="GitHub repo owner/name")
-    ap.add_argument("--port-name", default="bitloop", help="Port name directory under ports/")
-    ap.add_argument("--ports-root", default="ports", help="Path to ports root")
-    ap.add_argument("--versions-dir", default="versions", help="Path to versions dir (for x-add-version)")
-    ap.add_argument("--vcpkg", default="vcpkg", help="Path to vcpkg executable (or in PATH)")
-    ap.add_argument("--no-vcpkg-steps", action="store_true", help="Do not run format-manifest or x-add-version")
-    ap.add_argument("--dry-run", action="store_true", help="Compute and show changes but do not write files")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(description="Update a vcpkg port from a GitHub tag")
+    parser.add_argument("--repo", help="GitHub repo owner/name, e.g. willmh93/fltx")
+    parser.add_argument("--tag", help='Git tag to publish, e.g. v0.1.3')
+    parser.add_argument("--port-name", help="Port name directory under ports/")
+    parser.add_argument("--ports-root", default="ports", help="Path to ports root")
+    parser.add_argument("--versions-dir", default="versions", help="Path to versions dir")
+    parser.add_argument("--vcpkg", default="vcpkg", help="Path to vcpkg executable")
+    parser.add_argument("--port-version", type=int, help="Optional vcpkg port-version for same-upstream repackaging")
+    parser.add_argument("--no-vcpkg-steps", action="store_true", help="Do not run format-manifest or x-add-version")
+    parser.add_argument("--dry-run", action="store_true", help="Show changes without writing files")
+    args = parser.parse_args()
 
-    version = args.version
+    repo = (args.repo or ask_non_empty("Enter the repo owner/name")).strip().strip("/")
+    if not re.fullmatch(r"[^/\s]+/[^/\s]+", repo):
+        sys.exit('ERROR: repo must look like "owner/name"')
+
+    try:
+        tag = normalize_tag(args.tag or ask_non_empty("Enter the tag to base the port on"))
+    except ValueError as exc:
+        sys.exit(f"ERROR: {exc}")
+
+    version = version_from_tag(tag)
+    default_port_name = repo.rsplit("/", 1)[1]
+    port_name = (args.port_name or ask_non_empty("Enter the port name", default_port_name)).strip()
+
     ports_root = Path(args.ports_root).resolve()
-    port_dir = ports_root / args.port_name
+    versions_dir = Path(args.versions_dir).resolve()
+    port_dir = ports_root / port_name
     manifest_path = port_dir / "vcpkg.json"
     portfile_path = port_dir / "portfile.cmake"
 
     if not manifest_path.is_file():
-        print(f"ERROR: {manifest_path} not found", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(f"ERROR: {manifest_path} not found")
     if not portfile_path.is_file():
-        print(f"ERROR: {portfile_path} not found", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(f"ERROR: {portfile_path} not found")
 
-    url = f"https://github.com/{args.repo}/archive/refs/tags/v{version}.tar.gz"
+    url = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
 
-    # 1) download and hash
-    with tempfile.TemporaryDirectory() as td:
-        tmp_tar = Path(td) / f"{args.port_name}-{version}.tar.gz"
-        download(url, tmp_tar)
-        sha = sha512_file(tmp_tar)
-    print(f"SHA512: {sha}")
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_tar = Path(temp_dir) / f"{port_name}-{tag}.tar.gz"
+        download(url, temp_tar)
+        sha = sha512_file(temp_tar)
 
-    # 2) update vcpkg.json
-    manifest_obj = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest_before = json.dumps(manifest_obj, indent=2, sort_keys=False)
-    manifest_obj["version-semver"] = version
-    manifest_after = json.dumps(manifest_obj, indent=2, sort_keys=False)
+    manifest_text = manifest_path.read_text(encoding="utf-8")
+    manifest_newline = detect_newline(manifest_text)
+    manifest_obj = json.loads(manifest_text)
+    version_field = find_manifest_version_field(manifest_obj)
+    old_version = str(manifest_obj.get(version_field, ""))
 
-    # 3) update portfile.cmake
+    manifest_obj[version_field] = version
+
+    # _ChatGPT_: tag-based publishes normally mean a new upstream version, so reset port-version
+    if args.port_version is None:
+        manifest_obj.pop("port-version", None)
+    else:
+        manifest_obj["port-version"] = args.port_version
+
+    manifest_updated = dump_json_with_original_newline(manifest_obj, manifest_newline)
+
     portfile_text = portfile_path.read_text(encoding="utf-8")
-    portfile_updated = replace_ref_and_sha(portfile_text, version, sha)
+    portfile_updated = replace_repo_ref_and_sha(portfile_text, repo, tag, sha)
 
-    # Show changes in dry-run
+    print(f"repo:    {repo}")
+    print(f"port:    {port_name}")
+    print(f"tag:     {tag}")
+    print(f"version: {version}")
+    print(f"SHA512:  {sha}")
+    if old_version:
+        print(f"previous manifest version: {old_version}")
+
     if args.dry_run:
-        print("\n--- vcpkg.json (before) ---\n" + manifest_before)
-        print("\n--- vcpkg.json (after) ---\n" + manifest_after)
-        print("\n--- portfile.cmake (before) ---\n" + portfile_text)
-        print("\n--- portfile.cmake (after) ---\n" + portfile_updated)
+        print("\n--- vcpkg.json (after) ---\n")
+        print(manifest_updated)
+        print("\n--- portfile.cmake (after) ---\n")
+        print(portfile_updated)
         print("\nDry run complete. No files were modified.")
         return
 
-    # Write changes
-    manifest_path.write_text(manifest_after + "\n", encoding="utf-8")
+    manifest_path.write_text(manifest_updated, encoding="utf-8")
     portfile_path.write_text(portfile_updated, encoding="utf-8")
     print(f"Updated {manifest_path}")
     print(f"Updated {portfile_path}")
 
-    # 4) optional vcpkg steps
     if not args.no_vcpkg_steps:
-        run([args.vcpkg, f"--x-builtin-ports-root={str(ports_root)}", "format-manifest", "--all"])
+        run([args.vcpkg, f"--x-builtin-ports-root={ports_root}", "format-manifest", "--all"])
         run(["git", "add", str(manifest_path), str(portfile_path)])
         run([
             args.vcpkg,
-            f"--x-builtin-ports-root={str(ports_root)}",
-            f"--x-builtin-registry-versions-dir={args.versions_dir}",
+            f"--x-builtin-ports-root={ports_root}",
+            f"--x-builtin-registry-versions-dir={versions_dir}",
             "x-add-version",
-            args.port_name
+            port_name,
         ])
-        run(["git", "add", args.versions_dir])
+        run(["git", "add", str(versions_dir)])
 
     print("\nDone.")
+
 
 if __name__ == "__main__":
     main()
