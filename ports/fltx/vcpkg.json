@@ -1,6 +1,6 @@
 {
   "name": "fltx",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "f128 (double-double) and f256 (quad-double) floating-point types + math utilities",
   "homepage": "https://github.com/willhm94/fltx",
   "license": "MIT",
