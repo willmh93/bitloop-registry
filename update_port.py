@@ -134,7 +134,7 @@ def main():
     port_name = (args.port_name or ask_non_empty("Enter the port name", default_port_name)).strip()
 
     ports_root = Path(args.ports_root).resolve()
-    versions_dir = Path(args.versions_dir).resolve()
+    versions_dir = Path("versions").resolve()
     port_dir = ports_root / port_name
     manifest_path = port_dir / "vcpkg.json"
     portfile_path = port_dir / "portfile.cmake"
@@ -190,6 +190,8 @@ def main():
     portfile_path.write_text(portfile_updated, encoding="utf-8")
     print(f"Updated {manifest_path}")
     print(f"Updated {portfile_path}")
+
+    print(f"DEBUG: versions_dir = {versions_dir}")
 
     if not args.no_vcpkg_steps:
         run([args.vcpkg, f"--x-builtin-ports-root={ports_root}", "format-manifest", "--all"])
