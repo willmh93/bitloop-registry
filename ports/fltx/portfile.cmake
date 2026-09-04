@@ -2,7 +2,7 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO willmh93/fltx
+    REPO bitloop-dev/fltx
     REF "v${VERSION}"
     SHA512 7cc7623c2db84fafea0e20f7d70f118b99db9b6095f1b1a4a168045c19a2cffd0e47d749444fc498c3eeb26d4b5179d9654431110e9999fb6fdac1400a8abf28
     HEAD_REF main
@@ -11,9 +11,7 @@ vcpkg_from_github(
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DFLTX_BUILD_TESTS=OFF
-        -DFLTX_BUILD_EXAMPLES=OFF
-        -DFLTX_BUILD_ISOLATED=OFF
+        -DFLTX_DEVELOPER_BUILD=OFF
         -DBUILD_TESTING=OFF
 )
 

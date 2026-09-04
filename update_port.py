@@ -43,33 +43,36 @@ def dump_json_with_original_newline(obj, newline: str) -> str:
 
 
 def replace_repo_ref_and_sha(portfile_text: str, repo: str, tag: str, sha: str) -> str:
-    updated = re.sub(
-        r"(\bSHA512\s+)[0-9a-fA-F]+",
+    updated, sha_replacements = re.subn(
+        r"(?m)^(\s*SHA512\s+)[0-9a-fA-F]+",
         r"\g<1>" + sha,
         portfile_text,
-        count=1,
     )
+    if sha_replacements != 1:
+        raise ValueError("portfile.cmake must contain exactly one SHA512 value")
 
-    updated = re.sub(
-        r'(\bREPO\s+")([^"]+)(")',
-        r'\g<1>' + repo + r'\g<3>',
+    def replace_value(match: re.Match, value: str) -> str:
+        old_value = match.group(2)
+        if old_value.startswith('"'):
+            value = f'"{value}"'
+        return match.group(1) + value
+
+    updated, repo_replacements = re.subn(
+        r'(?m)^(\s*REPO\s+)("[^"]+"|[^\s\)#]+)',
+        lambda match: replace_value(match, repo),
         updated,
-        count=1,
     )
+    if repo_replacements != 1:
+        raise ValueError("portfile.cmake must contain exactly one REPO value")
 
     if "${VERSION}" not in updated:
-        updated = re.sub(
-            r'(\bREF\s+")([^"]+)(")',
-            r'\g<1>' + tag + r'\g<3>',
+        updated, ref_replacements = re.subn(
+            r'(?m)^(\s*REF\s+)("[^"]+"|[^\s\)#]+)',
+            lambda match: replace_value(match, tag),
             updated,
-            count=1,
         )
-        updated = re.sub(
-            r'(\bREF\s+)([^\s\)]+)',
-            r'\g<1>' + tag,
-            updated,
-            count=1,
-        )
+        if ref_replacements != 1:
+            raise ValueError("portfile.cmake must contain exactly one REF value")
 
     return updated
 
@@ -108,9 +111,20 @@ def find_manifest_version_field(manifest_obj: dict) -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Update a vcpkg port from a GitHub tag")
-    parser.add_argument("--repo", help="GitHub repo owner/name, e.g. willmh93/fltx")
-    parser.add_argument("--tag", help='Git tag to publish, e.g. v0.1.3')
+    parser = argparse.ArgumentParser(
+        description="Update a vcpkg port from a GitHub tag",
+        allow_abbrev=False,
+    )
+    parser.add_argument("--repo", help="GitHub repo owner/name, e.g. bitloop-dev/fltx")
+    version_input = parser.add_mutually_exclusive_group()
+    version_input.add_argument(
+        "--tag",
+        help='Git tag to publish, with or without "v", e.g. v0.1.3 or 0.1.3',
+    )
+    version_input.add_argument(
+        "--version",
+        help='Alias for --tag; accepts v0.1.3 or 0.1.3',
+    )
     parser.add_argument("--port-name", help="Port name directory under ports/")
     parser.add_argument("--ports-root", default="ports", help="Path to ports root")
     parser.add_argument("--versions-dir", default="versions", help="Path to versions dir")
@@ -125,7 +139,8 @@ def main():
         sys.exit('ERROR: repo must look like "owner/name"')
 
     try:
-        tag = normalize_tag(args.tag or ask_non_empty("Enter the tag to base the port on"))
+        supplied_version = args.tag or args.version
+        tag = normalize_tag(supplied_version or ask_non_empty("Enter the version/tag to publish"))
     except ValueError as exc:
         sys.exit(f"ERROR: {exc}")
 
@@ -134,7 +149,7 @@ def main():
     port_name = (args.port_name or ask_non_empty("Enter the port name", default_port_name)).strip()
 
     ports_root = Path(args.ports_root).resolve()
-    versions_dir = Path("versions").resolve()
+    versions_dir = Path(args.versions_dir).resolve()
     port_dir = ports_root / port_name
     manifest_path = port_dir / "vcpkg.json"
     portfile_path = port_dir / "portfile.cmake"
@@ -143,6 +158,10 @@ def main():
         sys.exit(f"ERROR: {manifest_path} not found")
     if not portfile_path.is_file():
         sys.exit(f"ERROR: {portfile_path} not found")
+    if not args.no_vcpkg_steps:
+        baseline_path = versions_dir / "baseline.json"
+        if not baseline_path.is_file():
+            sys.exit(f"ERROR: {baseline_path} not found")
 
     url = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
 
@@ -168,7 +187,10 @@ def main():
     manifest_updated = dump_json_with_original_newline(manifest_obj, manifest_newline)
 
     portfile_text = portfile_path.read_text(encoding="utf-8")
-    portfile_updated = replace_repo_ref_and_sha(portfile_text, repo, tag, sha)
+    try:
+        portfile_updated = replace_repo_ref_and_sha(portfile_text, repo, tag, sha)
+    except ValueError as exc:
+        sys.exit(f"ERROR: {exc}")
 
     print(f"repo:    {repo}")
     print(f"port:    {port_name}")
@@ -190,8 +212,6 @@ def main():
     portfile_path.write_text(portfile_updated, encoding="utf-8")
     print(f"Updated {manifest_path}")
     print(f"Updated {portfile_path}")
-
-    print(f"DEBUG: versions_dir = {versions_dir}")
 
     if not args.no_vcpkg_steps:
         run([args.vcpkg, f"--x-builtin-ports-root={ports_root}", "format-manifest", "--all"])
