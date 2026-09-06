@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO bitloop-dev/fltx
     REF "v${VERSION}"
-    SHA512 7cc7623c2db84fafea0e20f7d70f118b99db9b6095f1b1a4a168045c19a2cffd0e47d749444fc498c3eeb26d4b5179d9654431110e9999fb6fdac1400a8abf28
+    SHA512 d3de326065dcff9afe204b6e8eade249b5f638e321d905a1da3fe69c6968d24c92ba459f66527932d10accc5cf38ff266a3b2dfa4436cca99341401702900304
     HEAD_REF main
 )
 
@@ -12,7 +12,6 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         -DFLTX_DEVELOPER_BUILD=OFF
-        -DBUILD_TESTING=OFF
 )
 
 vcpkg_cmake_install()
