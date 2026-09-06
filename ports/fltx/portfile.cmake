@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO bitloop-dev/fltx
     REF "v${VERSION}"
-    SHA512 d3de326065dcff9afe204b6e8eade249b5f638e321d905a1da3fe69c6968d24c92ba459f66527932d10accc5cf38ff266a3b2dfa4436cca99341401702900304
+    SHA512 e49a873146e6f80c01ce05880f35e1e80eb6d97c7aef34c52b634c77c87d73aead212eed7bc92ec7d79b5e456d74ae01db178ebc2eee8b3f4a57d017e4ac1e4a
     HEAD_REF main
 )
 
